@@ -152,6 +152,7 @@ def init_db():
         "currency": "PKR",
         "shipping_charges": os.environ.get("SHIPPING_CHARGES", "250"),
         "free_shipping_minimum": "5000",
+        "payment_methods": "Cash on Delivery, Bank Transfer",
     }
     for key, value in defaults.items():
         db.execute("INSERT OR IGNORE INTO settings(key,value) VALUES (?,?)", (key, value))
@@ -264,13 +265,6 @@ def security_headers(response):
 @app.route("/")
 def index():
     return send_from_directory(BASE_DIR, "index.html")
-
-
-@app.get("/api/payment-methods")
-def payment_methods_public():
-    enabled = row("SELECT value FROM settings WHERE key='payment_methods'")
-    methods = [item.strip() for item in enabled["value"].split(",")] if enabled else ["Cash on Delivery", "Bank Transfer"]
-    return jsonify(methods=methods)
 
 
 @app.post("/api/auth/register")

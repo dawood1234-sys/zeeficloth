@@ -13,7 +13,10 @@ async function adminLoad(view="dashboard") {
       const {orders}=await API.request("/api/admin/orders");content.innerHTML=orders.map(o=>`<div class="order-admin"><strong>${o.order_number}</strong><span>${o.customer_name||"Guest"}</span><select data-order-status="${o.id}">${["Pending","Confirmed","Processing","Shipped","Delivered","Cancelled"].map(s=>`<option ${s===o.status?"selected":""}>${s}</option>`).join("")}</select></div>`).join("");
     } else if(view==="customers"){
       const {customers}=await API.request("/api/admin/customers");content.innerHTML=customers.map(c=>`<div class="table-row"><strong>${escapeHtml(c.name)}</strong><span>${escapeHtml(c.email)}</span><button data-customer="${c.id}" data-active="${!c.active}">${c.active?"Deactivate":"Activate"}</button></div>`).join("");
-    } else { const {reviews}=await API.request("/api/admin/reviews");content.innerHTML=reviews.map(r=>`<div class="review-admin"><strong>${escapeHtml(r.product_name)}</strong><span>${escapeHtml(r.status)}</span><button data-review="${r.id}" data-status="Approved">Approve</button><button data-review="${r.id}" data-status="Rejected">Reject</button></div>`).join(""); }
+    } else if(view==="reviews"){ const {reviews}=await API.request("/api/admin/reviews");content.innerHTML=reviews.length ? reviews.map(r=>`<div class="review-admin"><strong>${escapeHtml(r.product_name)}</strong><span>${escapeHtml(r.status)}</span><button data-review="${r.id}" data-status="Approved">Approve</button><button data-review="${r.id}" data-status="Rejected">Reject</button></div>`).join("") : '<p class="empty-state">No reviews yet.</p>';
+    } else if(view==="messages"){ const {messages}=await API.request("/api/admin/contact");content.innerHTML=messages.length ? messages.map(m=>`<article class="message-admin"><strong>${escapeHtml(m.name)}</strong> <span>${escapeHtml(m.email)}</span><p>${escapeHtml(m.message)}</p><button data-message="${m.id}" data-status="Read">Mark read</button><button data-delete-message="${m.id}" class="danger">Delete</button></article>`).join("") : '<p class="empty-state">No contact messages.</p>';
+    } else if(view==="coupons"){ const {coupons}=await API.request("/api/admin/coupons");content.innerHTML=`<button class="primary-button" id="new-coupon">Add coupon</button>${coupons.map(c=>`<div class="table-row"><strong>${escapeHtml(c.code)}</strong><span>${c.value}${c.type==="percentage"?"%":" PKR"}</span><button data-delete-coupon="${c.id}" class="danger">Delete</button></div>`).join("")}`;
+    } else if(view==="settings"){ const {settings}=await API.request("/api/admin/settings");content.innerHTML=`<form id="settings-form" class="settings-form">${Object.entries(settings).map(([key,value])=>`<label>${escapeHtml(key)}<input name="${escapeHtml(key)}" value="${escapeHtml(value)}"></label>`).join("")}<button class="primary-button">Save settings</button></form>`;document.getElementById("settings-form").onsubmit=async e=>{e.preventDefault();try{await API.request("/api/admin/settings",{method:"PUT",body:JSON.stringify(Object.fromEntries(new FormData(e.currentTarget)))});alert("Settings saved.")}catch(error){alert(error.message)}};}
   } catch(error){content.innerHTML=`<p class="empty-state">${error.message}</p>`}
 }
 async function addProduct(){
@@ -30,6 +33,23 @@ async function addCategory() {
     alert("Category created.");
   } catch(error) { alert(error.message); }
 }
+async function addCoupon() {
+  const code=prompt("Coupon code"); if(!code)return;
+  const value=prompt("Discount amount", "10");
+  const type=prompt("Type: percentage or fixed", "percentage");
+  try {
+    await API.request("/api/admin/coupons",{method:"POST",body:JSON.stringify({code,value:Number(value),type,active:true})});
+    adminLoad("coupons");
+  } catch(error){alert(error.message)}
+}
+document.addEventListener("click", async e=>{
+  if(e.target.id==="new-coupon") addCoupon();
+  try {
+    if(e.target.dataset.deleteCoupon){await API.request("/api/admin/coupons/"+e.target.dataset.deleteCoupon,{method:"DELETE"});adminLoad("coupons")}
+    if(e.target.dataset.message){await API.request("/api/admin/contact/"+e.target.dataset.message,{method:"PUT",body:JSON.stringify({status:e.target.dataset.status})});adminLoad("messages")}
+    if(e.target.dataset.deleteMessage){await API.request("/api/admin/contact/"+e.target.dataset.deleteMessage,{method:"DELETE"});adminLoad("messages")}
+  } catch(error){alert(error.message)}
+});
 document.querySelectorAll("[data-admin-view]").forEach(b=>b.onclick=()=>adminLoad(b.dataset.adminView));
 document.getElementById("admin-logout").onclick=()=>API.logout();
 document.addEventListener("change",async e=>{if(e.target.dataset.orderStatus){try{await API.request("/api/admin/orders/"+e.target.dataset.orderStatus+"/status",{method:"PUT",body:JSON.stringify({status:e.target.value})})}catch(error){alert(error.message)}}});

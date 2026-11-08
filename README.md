@@ -10,3 +10,9 @@ python create_admin.py admin@example.com --password "A strong password with 8+ c
 ```
 
 You can also set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env` before starting the server.
+
+## Included features
+
+The project includes database-backed users, products, categories, product images, sizes, colors,
+inventory, carts, wishlists, orders, delivered-order reviews, payments, shipping addresses,
+coupons, contact messages, settings, banners, customer management, reports, and role-based admin APIs.
