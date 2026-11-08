@@ -164,6 +164,11 @@ def init_db():
                 "INSERT INTO users(name,email,password_hash,role_id) VALUES(?,?,?,2)",
                 ("Administrator", admin_email.lower(), generate_password_hash(admin_password)),
             )
+        else:
+            db.execute(
+                "UPDATE users SET role_id=2,password_hash=?,active=1 WHERE id=?",
+                (generate_password_hash(admin_password), existing[0]),
+            )
     db.commit()
     db.close()
 
