@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wishlist — Zeefi Clothing</title><link rel="stylesheet" href="style.css"></head>
+<body><main class="page-shell"><header class="page-heading"><p class="eyebrow">Saved pieces</p><h1>Wishlist</h1></header><section id="wishlist-grid" class="product-grid"></section></main>
+<script src="app.js"></script><script>
+if (!API.token) location.href = "login.html";
+API.request("/api/wishlist").then(({products}) => {
+  const grid = document.getElementById("wishlist-grid");
+  grid.innerHTML = products.length ? products.map(productCard).join("") : '<p class="empty-state">Your wishlist is empty.</p>';
+}).catch(error => alert(error.message));
+</script></body></html>

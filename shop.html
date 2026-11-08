@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Shop — Zeefi Clothing</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="page-heading"><p class="eyebrow">Curated for you</p><h1>Shop the collection</h1></header>
+    <form class="filters" onsubmit="event.prevent.prevent; location.search=new URLSearchParams(new FormData(event.target)).toString();">
+      <input name="search" placeholder="Search clothing"><button class="primary-button">Search</button>
+    </form>
+    <section id="product-grid" class="product-grid"></section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

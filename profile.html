@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile — Zeefi Clothing</title><link rel="stylesheet" href="style.css"></head>
+<body><main class="auth-shell page-shell"><form id="profile-form" class="auth-card"><p class="eyebrow">Personal details</p><h1>My profile</h1><label>Name<input name="name"></label><label>Phone<input name="phone"></label><label>New password<input name="password" type="password" minlength="8" placeholder="Leave blank to keep current"></label><button class="primary-button">Save changes</button></form></main>
+<script src="app.js"></script><script>
+if (!API.token) location.href = "login.html";
+API.request("/api/profile").then(({user}) => { document.querySelector("[name=name]").value=user.name||""; document.querySelector("[name=phone]").value=user.phone||""; });
+document.getElementById("profile-form").onsubmit=async event=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));if(!data.password)delete data.password;try{await API.request("/api/profile",{method:"PUT",body:JSON.stringify(data)});alert("Profile updated.");}catch(error){alert(error.message)}};
+</script></body></html>

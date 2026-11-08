@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Create account — Zeefi Clothing</title><link rel="stylesheet" href="style.css"></head>
+<body><main class="auth-shell page-shell"><form id="register-form" class="auth-card"><p class="eyebrow">Join Zeefi</p><h1>Create account</h1>
+  <label>Name<input name="name" required></label><label>Email<input name="email" type="email" required></label><label>Phone<input name="phone"></label>
+  <label>Password<input name="password" type="password" minlength="8" required></label><button class="primary-button">Create account</button>
+  <p>Already have an account? <a href="login.html">Sign in</a></p>
+</form></main><script src="app.js"></script><script>
+document.getElementById("register-form").onsubmit=async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target));
+try{const result=await API.request("/api/auth/register",{method:"POST",body:JSON.stringify(data)});API.setSession(result.token,result.user);location.href="account.html"}catch(error){alert(error.message)}};</script></body></html>

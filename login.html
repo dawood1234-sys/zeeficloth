@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in — Zeefi Clothing</title><link rel="stylesheet" href="style.css"></head>
+<body><main class="auth-shell page-shell">
+  <form id="login-form" class="auth-card"><p class="eyebrow">Welcome back</p><h1>Sign in</h1>
+    <label>Email<input name="email" type="email" required></label><label>Password<input name="password" type="password" required></label>
+    <button class="primary-button">Sign in</button><p>New here? <a href="register.html">Create an account</a></p>
+  </form>
+</main><script src="app.js"></script>
+<script>
+document.getElementById("login-form").onsubmit=async e=>{
+ e.preventDefault(); const data=Object.fromEntries(new FormData(e.target));
+ try { const result=await API.request("/api/auth/login",{method:"POST",body:JSON.stringify(data)});
+ API.setSession(result.token,result.user); location.href=result.user.role==="admin"?"admin.html":"account.html";
+ } catch(error){alert(error.message);}
+};
+</script></body></html>

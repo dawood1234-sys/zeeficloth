@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Your bag — Zeefi Clothing</title><link rel="stylesheet" href="style.css"></head>
+<body><main class="page-shell"><header class="page-heading"><p class="eyebrow">Your selection</p><h1>Shopping bag</h1></header><div id="cart-list" class="cart-list"></div><div id="cart-summary"></div></main>
+<script src="app.js"></script><script>
+async function loadCart(){if(!API.token)return location.href="login.html";try{const {items}=await API.request("/api/cart");const el=document.getElementById("cart-list");
+if(!items.length){el.innerHTML='<p class="empty-state">Your bag is empty.</p>';return}let total=0;el.innerHTML=items.map(i=>{total+=i.price*i.quantity;return `<article class="cart-item"><img src="${i.product.images[0]?.url||""}"><div><h3>${escapeHtml(i.product.name)}</h3><p>${escapeHtml(i.size||"")} ${escapeHtml(i.color||"")}</p><input class="qty" data-id="${i.id}" type="number" min="1" value="${i.quantity}"></div><strong>PKR ${Number(i.price*i.quantity).toLocaleString()}</strong><button class="remove" data-id="${i.id}">Remove</button></article>`}).join("");
+document.getElementById("cart-summary").innerHTML=`<div class="summary"><strong>Subtotal PKR ${Number(total).toLocaleString()}</strong><a class="primary-button" href="checkout.html">Continue to checkout</a></div>`;
+}catch(error){alert(error.message)}}document.addEventListener("change",async e=>{if(e.target.matches(".qty")){try{await API.request("/api/cart/"+e.target.dataset.id,{method:"PUT",body:JSON.stringify({quantity:Number(e.target.value)})});loadCart()}catch(error){alert(error.message)}}});
+document.addEventListener("click",async e=>{if(e.target.matches(".remove")){try{await API.request("/api/cart/"+e.target.dataset.id,{method:"DELETE"});loadCart()}catch(error){alert(error.message)}}});loadCart();</script></body></html>

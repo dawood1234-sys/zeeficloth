@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg">
+
+<div class="container">
+
+<a class="navbar-brand">Zeefi Clothing</a>
+
+<ul class="navbar-nav ms-auto">
+
+<li class="nav-item">
+<a class="nav-link" href="index.html">Home</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="about.html">About</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="contact.html">Contact</a>
+</li>
+
+</ul>
+
+</div>
+
+</nav>
+
+
+<div class="container mt-5">
+
+<h2>Contact Us</h2>
+
+<form id="contact-form">
+
+<div class="mb-3">
+<label>Name</label>
+<input name="name" type="text" class="form-control" required>
+</div>
+
+<div class="mb-3">
+<label>Email</label>
+<input name="email" type="email" class="form-control" required>
+</div>
+
+<div class="mb-3">
+<label>Message</label>
+<textarea name="message" class="form-control" required></textarea>
+</div>
+
+<button class="btn btn-dark">Send</button>
+
+</form>
+
+<br>
+
+<p>Phone: 0343-5817490</p>
+
+<p>Location: Gilgit Baltistan</p>
+
+</div>
+
+<script src="app.js"></script>
+<script>
+document.getElementById("contact-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(event.currentTarget));
+  try { await API.request("/api/contact", { method: "POST", body: JSON.stringify(data) }); alert("Your message has been sent."); event.currentTarget.reset(); }
+  catch (error) { alert(error.message); }
+});
+</script>
+
+</body>
+</html>
