@@ -908,6 +908,11 @@ def banners():
     return jsonify(banner=row("SELECT * FROM banners WHERE id=?", (cursor.lastrowid,))), 201
 
 
+@app.get("/api/banners")
+def public_banners():
+    return jsonify(banners=rows("SELECT * FROM banners WHERE active=1 ORDER BY sort_order,id"))
+
+
 @app.route("/api/admin/banners/<int:banner_id>", methods=["PUT", "DELETE"])
 @auth("admin")
 def banner_detail(banner_id):
@@ -956,6 +961,37 @@ def payment_methods():
 def sales_report():
     return jsonify(report=rows("""SELECT o.order_number,o.created_at,u.name customer,o.status,o.total,o.payment_status
                                   FROM orders o LEFT JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC"""))
+
+
+@app.get("/api/admin/report/csv")
+@auth("admin")
+def sales_report_csv():
+    from flask import Response
+    import csv
+    import io
+    orders = rows("""SELECT o.order_number,o.created_at,u.name customer,o.status,o.total,o.payment_status
+                     FROM orders o LEFT JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC""")
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=["order_number", "created_at", "customer", "status", "total", "payment_status"])
+    writer.writeheader()
+    writer.writerows(orders)
+    response = Response(output.getvalue(), mimetype="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=zeefi-orders.csv"
+    return response
+
+
+@app.put("/api/admin/orders/<int:order_id>/payment")
+@auth("admin")
+def update_payment_status(order_id):
+    data = request.get_json(silent=True) or {}
+    status = data.get("status")
+    if status not in {"Pending", "Paid", "Refunded", "Failed"}:
+        return jsonify(error="Invalid payment status"), 400
+    db = get_db()
+    db.execute("UPDATE orders SET payment_status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?", (status, order_id))
+    db.execute("UPDATE payments SET status=? WHERE order_id=?", (status, order_id))
+    db.commit()
+    return jsonify(order=order_detail(order_id))
 
 
 @app.get("/api/profile")

@@ -17,6 +17,8 @@ async function adminLoad(view="dashboard") {
     } else if(view==="messages"){ const {messages}=await API.request("/api/admin/contact");content.innerHTML=messages.length ? messages.map(m=>`<article class="message-admin"><strong>${escapeHtml(m.name)}</strong> <span>${escapeHtml(m.email)}</span><p>${escapeHtml(m.message)}</p><button data-message="${m.id}" data-status="Read">Mark read</button><button data-delete-message="${m.id}" class="danger">Delete</button></article>`).join("") : '<p class="empty-state">No contact messages.</p>';
     } else if(view==="coupons"){ const {coupons}=await API.request("/api/admin/coupons");content.innerHTML=`<button class="primary-button" id="new-coupon">Add coupon</button>${coupons.map(c=>`<div class="table-row"><strong>${escapeHtml(c.code)}</strong><span>${c.value}${c.type==="percentage"?"%":" PKR"}</span><button data-delete-coupon="${c.id}" class="danger">Delete</button></div>`).join("")}`;
     } else if(view==="settings"){ const {settings}=await API.request("/api/admin/settings");content.innerHTML=`<form id="settings-form" class="settings-form">${Object.entries(settings).map(([key,value])=>`<label>${escapeHtml(key)}<input name="${escapeHtml(key)}" value="${escapeHtml(value)}"></label>`).join("")}<button class="primary-button">Save settings</button></form>`;document.getElementById("settings-form").onsubmit=async e=>{e.preventDefault();try{await API.request("/api/admin/settings",{method:"PUT",body:JSON.stringify(Object.fromEntries(new FormData(e.currentTarget)))});alert("Settings saved.")}catch(error){alert(error.message)}};}
+    else if(view==="banners"){const {banners}=await API.request("/api/admin/banners");content.innerHTML=`<button class="primary-button" id="new-banner">Add banner</button>${banners.map(b=>`<div class="table-row"><strong>${escapeHtml(b.title)}</strong><span>${b.active?"Active":"Inactive"}</span><button data-delete-banner="${b.id}" class="danger">Delete</button></div>`).join("")}`}
+    else if(view==="report"){content.innerHTML=`<a class="primary-button" href="/api/admin/report/csv" id="download-report" target="_blank">Download CSV</a>`;document.getElementById("download-report").addEventListener("click",async e=>{e.preventDefault();const response=await fetch(e.currentTarget.href,{headers:{Authorization:"Bearer "+API.token}});const blob=await response.blob();const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="zeefi-orders.csv";link.click();URL.revokeObjectURL(url);});}
   } catch(error){content.innerHTML=`<p class="empty-state">${error.message}</p>`}
 }
 async function addProduct(){
@@ -42,12 +44,20 @@ async function addCoupon() {
     adminLoad("coupons");
   } catch(error){alert(error.message)}
 }
+async function addBanner() {
+  const title=prompt("Banner title"); if(!title)return;
+  const subtitle=prompt("Banner subtitle","");
+  const image=prompt("Banner image URL","");
+  try{await API.request("/api/admin/banners",{method:"POST",body:JSON.stringify({title,subtitle,image,active:true})});adminLoad("banners")}catch(error){alert(error.message)}
+}
 document.addEventListener("click", async e=>{
   if(e.target.id==="new-coupon") addCoupon();
+  if(e.target.id==="new-banner") addBanner();
   try {
     if(e.target.dataset.deleteCoupon){await API.request("/api/admin/coupons/"+e.target.dataset.deleteCoupon,{method:"DELETE"});adminLoad("coupons")}
     if(e.target.dataset.message){await API.request("/api/admin/contact/"+e.target.dataset.message,{method:"PUT",body:JSON.stringify({status:e.target.dataset.status})});adminLoad("messages")}
     if(e.target.dataset.deleteMessage){await API.request("/api/admin/contact/"+e.target.dataset.deleteMessage,{method:"DELETE"});adminLoad("messages")}
+    if(e.target.dataset.deleteBanner){await API.request("/api/admin/banners/"+e.target.dataset.deleteBanner,{method:"DELETE"});adminLoad("banners")}
   } catch(error){alert(error.message)}
 });
 document.querySelectorAll("[data-admin-view]").forEach(b=>b.onclick=()=>adminLoad(b.dataset.adminView));
